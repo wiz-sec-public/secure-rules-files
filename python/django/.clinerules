@@ -1,0 +1,37 @@
+As a security-aware developer, generate secure Python code using Django that inherently prevents top security weaknesses.
+Focus on making the implementation inherently safe rather than merely renaming methods with "secure_" prefixes.
+Use inline comments to clearly highlight critical security controls, implemented measures, and any security assumptions made in the code.
+Adhere strictly to best practices from OWASP, with particular consideration for the OWASP ASVS guidelines.
+**Avoid Slopsquatting**: Be careful when referencing or importing packages. Do not guess if a package exists. Comment on any low reputation or uncommon packages you have included.
+
+### CWE-89: Improper Neutralization of Special Elements in SQL Command ('SQL Injection')
+**Summary:** Untrusted input is incorporated into a SQL query without proper neutralization, allowing attackers to alter query logic or execute arbitrary commands.
+**Mitigation Rule:** Utilize Django's ORM (Object-Relational Mapper) exclusively for database interactions, which inherently uses parameterized queries. Avoid raw SQL queries unless absolutely necessary, and if so, use `connection.cursor().execute()` with parameters, never string formatting.
+
+### CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')
+**Summary:** Untrusted input is included in web pages without proper encoding or escaping, allowing attackers to inject client-side scripts.
+**Mitigation Rule:** Rely on Django's template engine for rendering HTML, which automatically escapes output by default. When rendering content directly, ensure all user-supplied data is explicitly escaped using `django.utils.html.escape()` or `django.utils.html.format_html()`.
+
+### CWE-287: Improper Authentication
+**Summary:** An application does not correctly verify user identity, leading to unauthorized access.
+**Mitigation Rule:** Leverage Django's built-in authentication system (`django.contrib.auth`) for all user authentication and session management. Implement strong password policies and multi-factor authentication where appropriate, utilizing `django.contrib.auth.hashers` for secure password storage.
+
+### CWE-502: Deserialization of Untrusted Data
+**Summary:** An application deserializes data from an untrusted source, which can lead to arbitrary code execution or denial of service.
+**Mitigation Rule:** Never deserialize untrusted or unvalidated data, especially formats like Python's `pickle`. When data exchange is necessary, prefer secure, human-readable, and well-defined formats like JSON or YAML, and validate schemas rigorously.
+
+### CWE-16: Configuration
+**Summary:** Application or server configurations are set insecurely, exposing vulnerabilities or sensitive information.
+**Mitigation Rule:** Configure Django settings (`settings.py`) securely, ensuring `DEBUG` is `False` in production, `SECRET_KEY` is a strong, unique, and environment-variable-loaded value, `ALLOWED_HOSTS` is explicitly defined, and `CSRF_COOKIE_SECURE`, `SESSION_COOKIE_SECURE`, and `SECURE_BROWSER_XSS_FILTER` are `True`. Implement proper logging and error handling to avoid information leakage.
+
+### CWE-918: Server-Side Request Forgery (SSRF)
+**Summary:** An application fetches a remote resource without validating the user-supplied URL, allowing an attacker to coerce the server to make requests to arbitrary internal or external systems.
+**Mitigation Rule:** When fetching external resources based on user input, strictly validate and sanitize URLs, restrict schemes (e.g., `https` only), and whitelist allowed domains. Use `requests` library with connection timeouts and avoid allowing redirects to internal IPs or sensitive zones.
+
+### CWE-798: Use of Hard-coded Credentials
+**Summary:** Sensitive credentials (e.g., API keys, database passwords) are directly embedded within the application's source code.
+**Mitigation Rule:** Never hardcode sensitive credentials, API keys, or secrets directly in code. Load all secrets from environment variables (e.g., using `os.environ` or `python-decouple`), a secure secrets manager (e.g., AWS Secrets Manager, HashiCorp Vault), or a Django settings file that is not committed to version control and loaded from secure external sources.
+
+### Memory Safety Considerations (Python Specific)
+**Summary:** Python is a memory-safe language, and memory safety vulnerabilities (e.g., buffer overflows, use-after-free) are generally not directly exploitable at the application level through standard Python code.
+**Mitigation Rule:** Disregard explicit memory safety considerations related to low-level memory management in Python code generation, as Python's runtime environment handles memory allocation and deallocation automatically and safely. Focus on preventing logical and data-related vulnerabilities.

@@ -1,0 +1,42 @@
+---
+description: Enforces security best practices for Java applications built with Spring by addressing common vulnerabilities.
+globs: **/*.java, **/*.xml, **/*.properties, **/*.yml
+alwaysApply: false
+---
+- As a security-aware developer, generate secure Java code using Spring that inherently prevents top security weaknesses.
+- Focus on making the implementation inherently safe rather than merely renaming methods with "secure_" prefixes.
+- Use inline comments to clearly highlight critical security controls, implemented measures, and any security assumptions made in the code.
+- Adhere strictly to best practices from OWASP, with particular consideration for the OWASP ASVS guidelines.
+- **Avoid Slopsquatting**: Be careful when referencing or importing packages. Do not guess if a package exists. Comment on any low reputation or uncommon packages you have included.
+
+### Memory Safety
+**Summary:** Java is a memory-safe language, which generally prevents common memory corruption vulnerabilities such as buffer overflows and use-after-free errors.
+**Mitigation Rule:** Since Java is memory-safe, explicit memory management considerations typically found in languages like C/C++ are not directly applicable; focus instead on other CWEs.
+
+### CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')
+**Summary:** An attacker can modify or extend the original SQL query through untrusted input, leading to unauthorized data access, modification, or destruction.
+**Mitigation Rule:** Always use `PreparedStatement` with parameterized queries for all database interactions and never concatenate user-supplied input directly into SQL queries. Leverage Spring Data JPA or Spring's `JdbcTemplate` which internally handle parameterization correctly.
+
+### CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')
+**Summary:** Untrusted data is incorporated into a web page without proper neutralization, allowing an attacker to execute arbitrary client-side scripts in a victim's browser.
+**Mitigation Rule:** Ensure all untrusted input rendered in HTML contexts is properly HTML-escaped on the server-side before being sent to the browser. Utilize templating engines like Thymeleaf or JSTL with their auto-escaping features enabled by default, or explicitly use libraries like OWASP Java Encoder for manual encoding.
+
+### CWE-284: Improper Access Control
+**Summary:** An application fails to properly restrict access to a resource from an unauthorized actor, allowing them to perform actions they are not permitted to.
+**Mitigation Rule:** Implement a robust authorization mechanism using Spring Security's `@PreAuthorize` and `@PostAuthorize` annotations or Method Security Expressions to enforce access controls on all sensitive endpoints and methods. Employ a "deny by default" policy for access and explicitly define permitted roles or permissions.
+
+### CWE-502: Deserialization of Untrusted Data
+**Summary:** Deserializing attacker-controlled data can lead to remote code execution, denial of service, or other malicious actions.
+**Mitigation Rule:** Avoid deserializing untrusted or unauthenticated data from external sources. If deserialization is unavoidable, implement strict type filtering (whitelisting allowed classes), disable dangerous gadget classes, or use a secure deserialization format like JSON (with Jackson configured securely) instead of native Java serialization.
+
+### CWE-611: Improper Restriction of XML External Entity Reference
+**Summary:** An XML parser processes external entity references from an untrusted XML input, potentially leading to information disclosure, server-side request forgery, or denial of service.
+**Mitigation Rule:** Disable DTDs and external entity processing for all XML parsers (e.g., SAX, DOM, StAX, JAXB) when processing untrusted XML input. Specifically set features like `XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES` to `false` and `XMLInputFactory.SUPPORT_DTD` to `false`.
+
+### CWE-798: Use of Hard-coded Credentials
+**Summary:** Sensitive authentication credentials or cryptographic keys are directly embedded within the source code, making them easily discoverable and exploitable.
+**Mitigation Rule:** Never hardcode secrets or credentials directly in source code. Externalize all sensitive configuration using Spring Boot's externalized configuration capabilities (e.g., `application.properties`, `application.yml`), environment variables, or a dedicated secrets management solution such as HashiCorp Vault, AWS Secrets Manager, or Azure Key Vault.
+
+### CWE-20: Improper Input Validation
+**Summary:** The application does not properly validate user input, allowing malicious data to be processed which can lead to various downstream vulnerabilities.
+**Mitigation Rule:** Implement comprehensive server-side input validation for all user-supplied data, including format, type, length, range, and acceptable characters. Utilize Spring's `@Valid` annotation with JSR 303/380 (Bean Validation API) and custom validators, preferring an allow-list validation approach over a block-list approach.

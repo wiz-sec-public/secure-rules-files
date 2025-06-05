@@ -1,0 +1,38 @@
+---
+trigger: glob
+description: Enforces secure coding practices for Java applications built with Spring to mitigate common security weaknesses.
+globs: **/*.js, **/*.ts
+---
+- As a security-aware developer, generate secure Java code using Spring that inherently prevents top security weaknesses.
+- Focus on making the implementation inherently safe rather than merely renaming methods with "secure_" prefixes.
+- Use inline comments to clearly highlight critical security controls, implemented measures, and any security assumptions made in the code.
+- Adhere strictly to best practices from OWASP, with particular consideration for the OWASP ASVS guidelines.
+- **Avoid Slopsquatting**: Be careful when referencing or importing packages. Do not guess if a package exists. Comment on any low reputation or uncommon packages you have included.
+
+### CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')
+**Summary:** Occurs when an application includes untrusted data in a web page without proper neutralization, allowing malicious scripts to execute in a user's browser.
+**Mitigation Rule:** Always use Spring's built-in templating engines like Thymeleaf or FreeMarker which automatically escape output by default, or explicitly encode all untrusted output using `org.springframework.web.util.HtmlUtils.htmlEscape` before rendering to the client.
+
+### CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')
+**Summary:** Occurs when an attacker manipulates SQL queries by injecting malicious SQL code into input fields, allowing unauthorized data access or modification.
+**Mitigation Rule:** Always use parameterized queries with prepared statements via Spring Data JPA, `JdbcTemplate` with parameter arrays, or `NamedParameterJdbcTemplate` to ensure user input is treated as data, not executable SQL.
+
+### CWE-20: Improper Input Validation
+**Summary:** Occurs when an application fails to validate or incorrectly validates user-supplied data, leading to various vulnerabilities including injection, buffer overflows, and logical flaws.
+**Mitigation Rule:** Implement strict server-side input validation for all user-supplied data, leveraging Spring's `@Valid` annotation with JSR 303 (Bean Validation API) and custom validators, defining strict allow-lists for data formats, types, lengths, and ranges.
+
+### CWE-502: Deserialization of Untrusted Data
+**Summary:** Occurs when an application deserializes data from untrusted sources without sufficient validation, allowing attackers to execute arbitrary code or cause denial of service.
+**Mitigation Rule:** Avoid deserializing untrusted data entirely; if unavoidable, use secure serialization libraries like `Jackson` with `FAIL_ON_UNKNOWN_PROPERTIES` enabled and `DEFAULT_TYPING` disabled, and ensure strict validation of the serialized data before processing.
+
+### CWE-522: Insufficiently Protected Credentials
+**Summary:** Occurs when sensitive credentials or secrets are stored or transmitted in a way that allows unauthorized access, often via hardcoding or weak encryption.
+**Mitigation Rule:** Store all sensitive credentials (e.g., API keys, database passwords, private keys) outside of the source code, leveraging Spring Boot's externalized configuration (e.g., `application.properties`, `application.yml`), environment variables, or secure secret management services like HashiCorp Vault or AWS Secrets Manager.
+
+### CWE-287: Improper Authentication
+**Summary:** Occurs when an application incorrectly implements authentication, allowing attackers to bypass security measures and gain unauthorized access.
+**Mitigation Rule:** Implement robust authentication mechanisms using Spring Security, ensuring secure password hashing (e.g., `BCryptPasswordEncoder`), secure session management (e.g., `HttpSession` with `httpOnly` and `secure` flags), and multi-factor authentication where appropriate.
+
+### CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')
+**Summary:** Occurs when an application accepts user-supplied input to construct file paths without proper sanitization, allowing attackers to access arbitrary files or directories outside the intended scope.
+**Mitigation Rule:** Sanitize all user-supplied file path input by resolving canonical paths using `java.nio.file.Path.toRealPath()` and strictly validating that the resolved path is strictly within an allowed base directory before any file system operations.

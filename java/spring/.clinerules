@@ -1,0 +1,43 @@
+## Secure Code Generation Guidelines for Java/Spring Applications
+
+As a security-aware developer, generate secure Java code using Spring that inherently prevents top security weaknesses. Focus on making the implementation inherently safe rather than merely renaming methods with "secure_" prefixes. Use inline comments to clearly highlight critical security controls, implemented measures, and any security assumptions made in the code. Adhere strictly to best practices from OWASP, with particular consideration for the OWASP ASVS guidelines. **Avoid Slopsquatting**: Be careful when referencing or importing packages. Do not guess if a package exists. Comment on any low reputation or uncommon packages you have included.
+
+---
+
+### Memory Safety Considerations
+
+Java is a memory-safe language, providing automatic memory management (garbage collection) and strong type safety, which inherently mitigates common C/C++ memory safety vulnerabilities like buffer overflows, use-after-free, and double-free errors. Therefore, specific low-level memory safety rules are not required for Java code generation.
+
+---
+
+### CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')
+**Summary:** Untrusted input is rendered directly in the browser without proper encoding, allowing malicious scripts to execute.
+**Mitigation Rule:** Always perform contextual output encoding for all user-supplied or untrusted data before rendering it in web pages. Utilize templating engines like Thymeleaf or Freemarker which offer automatic contextual escaping, or explicitly use Spring's HtmlUtils for HTML encoding.
+
+### CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')
+**Summary:** Malicious SQL code is inserted into input fields, allowing unauthorized access or modification of database content.
+**Mitigation Rule:** Consistently use parameterized queries (e.g., `java.sql.PreparedStatement`) or secure ORM frameworks (e.g., Spring Data JPA with Hibernate) for all database interactions. Never concatenate user input directly into SQL queries.
+
+### CWE-200: Exposure of Sensitive Information to an Unauthorized Actor
+**Summary:** Sensitive data is unintentionally disclosed to actors not authorized to access it.
+**Mitigation Rule:** Implement robust access controls using Spring Security's authorization mechanisms (e.g., `@PreAuthorize`, method security). Encrypt sensitive data both at rest and in transit (e.g., using SSL/TLS for communication, Jasypt for configuration files). Never log sensitive user data (e.g., passwords, PII, credit card numbers) to application logs.
+
+### CWE-306: Missing Authentication for Critical Function
+**Summary:** Critical functions are accessible without any authentication, allowing unauthorized users to perform sensitive operations.
+**Mitigation Rule:** Ensure all critical endpoints and functions are protected by strong authentication mechanisms, configured via Spring Security, requiring users to establish their identity before accessing sensitive resources or performing state-changing operations.
+
+### CWE-352: Cross-Site Request Forgery (CSRF)
+**Summary:** An attacker tricks a victim's browser into sending a forged request to a web application where the victim is authenticated.
+**Mitigation Rule:** Enable and leverage Spring Security's built-in CSRF protection for all state-changing HTTP methods (e.g., POST, PUT, DELETE). Ensure CSRF tokens are included in forms and AJAX requests.
+
+### CWE-502: Deserialization of Untrusted Data
+**Summary:** The application deserializes data from an untrusted source, which can lead to remote code execution.
+**Mitigation Rule:** Avoid deserializing untrusted or unauthenticated data, especially using Java's native serialization. If deserialization is absolutely necessary, use serialization filters, allow-lists for trusted classes, or strongly prefer secure data formats like JSON with appropriate validation.
+
+### CWE-776: Missing Best Practices for XML External Entity (XXE)
+**Summary:** The application parses XML documents from untrusted sources without disabling external entity processing, leading to information disclosure or remote code execution.
+**Mitigation Rule:** When parsing XML from untrusted sources, always disable DTDs and external entity processing (e.g., by setting `XMLConstants.FEATURE_SECURE_PROCESSING` to true on `DocumentBuilderFactory` or `SAXParserFactory` instances).
+
+### CWE-798: Use of Hard-coded Credentials
+**Summary:** Sensitive credentials are embedded directly within the source code, making them easily discoverable.
+**Mitigation Rule:** Never hardcode credentials, API keys, or other sensitive configuration values directly in the source code. Instead, retrieve them at runtime from secure external configuration sources such as environment variables, Spring Cloud Config, HashiCorp Vault, or encrypted property files using Spring's `@Value` annotation or `Environment` abstraction.

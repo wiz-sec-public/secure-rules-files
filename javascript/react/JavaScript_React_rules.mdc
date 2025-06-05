@@ -1,0 +1,47 @@
+---
+description: Generates secure JavaScript code for React applications, focusing on preventing common vulnerabilities like XSS, CSRF, and hardcoded secrets, adhering to OWASP ASVS guidelines.
+globs: **/*.js, **/*.ts
+alwaysApply: false
+---
+# Security-First Code Generation Guidelines for JavaScript/React
+
+As a security-aware developer, generate secure JavaScript code using React that inherently prevents top security weaknesses. Focus on making the implementation inherently safe rather than merely renaming methods with "secure_" prefixes. Use inline comments to clearly highlight critical security controls, implemented measures, and any security assumptions made in the code. Adhere strictly to best practices from OWASP, with particular consideration for the OWASP ASVS guidelines.
+
+**Avoid Slopsquatting**: Be careful when referencing or importing packages. Do not guess if a package exists. Comment on any low reputation or uncommon packages you have included.
+
+## General Security Considerations
+
+*   **Memory Safety**: JavaScript is a garbage-collected, memory-safe language. Focus on preventing logical vulnerabilities rather than low-level memory errors.
+*   **Defense-in-Depth**: Implement security controls at multiple layers (frontend, backend, network) to provide comprehensive protection.
+*   **Least Privilege**: Design components and user roles with the minimum necessary permissions to perform their functions.
+*   **Secure by Default**: Choose libraries, frameworks, and configurations that prioritize security and safe defaults.
+
+## Top CWEs and Mitigation Rules for JavaScript/React
+
+### CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting') (XSS)
+**Summary:** Allows attackers to inject client-side scripts into web pages viewed by other users, leading to defacement, session hijacking, or data theft.
+**Mitigation Rule:** Always leverage React's automatic escaping for dynamic content. Strictly avoid `dangerouslySetInnerHTML` unless absolutely necessary; if used, ensure all user-supplied HTML is thoroughly sanitized on the server-side or by a robust client-side library like `dompurify` before rendering.
+
+### CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')
+**Summary:** Allows an attacker to access, modify, or create arbitrary files and directories on the server or in local storage by manipulating file paths.
+**Mitigation Rule:** For any operations involving file paths, URLs, or resource identifiers derived from untrusted input (e.g., user input, URL parameters), validate and sanitize inputs rigorously. Prefer using allow-lists for valid path components or resource names, and never directly concatenate untrusted input into file system paths or dynamic imports.
+
+### CWE-352: Cross-Site Request Forgery (CSRF)
+**Summary:** Allows an attacker to trick a victim into submitting an unintended request to a web application, performing actions on the victim's behalf.
+**Mitigation Rule:** For all state-changing operations (POST, PUT, DELETE, etc.), ensure server-side CSRF protection is in place, typically via unique, per-session CSRF tokens, which the React application must include in its requests. Additionally, configure `SameSite` cookies (e.g., `Lax` or `Strict`) and validate `Origin` and `Referer` headers on the server for enhanced protection.
+
+### CWE-20: Improper Input Validation
+**Summary:** Failure to validate input can lead to various vulnerabilities including injection, data corruption, and logic flaws, by accepting malicious or malformed data.
+**Mitigation Rule:** Implement comprehensive input validation on both the client-side (for user experience) and, critically, on the server-side (for security enforcement). Use strict allow-lists for expected data types, formats, lengths, and ranges. Never trust client-side validation alone.
+
+### CWE-306: Missing Authentication for Critical Function
+**Summary:** Critical functions lack proper authentication mechanisms, allowing unauthorized users to access sensitive operations or data.
+**Mitigation Rule:** Ensure all sensitive client-side actions (e.g., API calls modifying user data, administrative functions) are explicitly backed by robust server-side authentication and authorization checks. Frontend UI elements for sensitive actions should only be rendered or enabled if the user is authenticated and authorized, but this must never be the sole control.
+
+### CWE-502: Deserialization of Untrusted Data
+**Summary:** Deserializing untrusted or malformed data can lead to remote code execution, denial of service, or arbitrary file creation due to insecure object reconstruction.
+**Mitigation Rule:** Avoid deserializing untrusted data directly from user input or external sources within the React application or any associated backend services it interacts with. If deserialization is unavoidable, use secure, restricted serialization formats (e.g., JSON with schema validation, not arbitrary object graphs) and ensure strict validation of the deserialized data.
+
+### CWE-798: Use of Hard-coded Credentials
+**Summary:** Storing sensitive information like API keys, database passwords, or secret keys directly within source code can lead to unauthorized access and compromise.
+**Mitigation Rule:** Absolutely never hardcode any secrets, API keys, credentials, or sensitive configuration values directly into the JavaScript/React source code or public build artifacts. Utilize environment variables (e.g., `process.env.REACT_APP_MY_SECRET`), secure configuration management systems, or proxy sensitive API calls through a secure backend service to protect credentials.

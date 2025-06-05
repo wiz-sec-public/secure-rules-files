@@ -1,0 +1,36 @@
+---
+trigger: glob
+description: Secure JavaScript/React application development rules enforcing OWASP ASVS principles and addressing common CWEs.
+globs: **/*.js, **/*.ts
+---
+As a security-aware developer, generate secure JavaScript code using React that inherently prevents top security weaknesses. Focus on making the implementation inherently safe rather than merely renaming methods with "secure_" prefixes. Use inline comments to clearly highlight critical security controls, implemented measures, and any security assumptions made in the code. Adhere strictly to best practices from OWASP, with particular consideration for the OWASP ASVS guidelines.
+
+**Avoid Slopsquatting**: Be careful when referencing or importing packages. Do not guess if a package exists. Comment on any low reputation or uncommon packages you have included.
+
+### CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')
+**Summary:** An attacker can inject malicious client-side scripts into web pages viewed by other users.
+**Mitigation Rule:** Render user-supplied content only after it has been properly escaped or sanitized. Leverage React's automatic escaping for JSX, and never use `dangerouslySetInnerHTML` with untrusted data. When displaying rich text or HTML content from untrusted sources, use a robust sanitization library like `DOMPurify` to filter out malicious scripts and attributes.
+
+### CWE-352: Cross-Site Request Forgery (CSRF)
+**Summary:** An attacker tricks a user into making unintended requests to a web application in which they are authenticated.
+**Mitigation Rule:** Implement anti-CSRF tokens for all state-changing requests (e.g., POST, PUT, DELETE). Ensure these tokens are generated server-side, securely transmitted (e.g., via HttpOnly cookies or response bodies), and validated on every sensitive request. Verify the `Origin` and `Referer` headers for same-origin requests where appropriate, but do not solely rely on them.
+
+### CWE-287: Improper Authentication
+**Summary:** The application fails to properly authenticate users, allowing unauthorized access.
+**Mitigation Rule:** Handle authentication tokens (e.g., JWTs, session IDs) securely. Store session tokens in HttpOnly, Secure cookies. Never store sensitive authentication data like passwords or unencrypted tokens directly in client-side storage such (e.g., `localStorage`, `sessionStorage`) as they are vulnerable to XSS attacks. Use secure, standard authentication flows like OAuth 2.0 or OpenID Connect with robust libraries.
+
+### CWE-20: Improper Input Validation
+**Summary:** The application accepts input without proper validation, leading to various vulnerabilities.
+**Mitigation Rule:** Validate all client-side input for type, format, length, and range before processing or submitting to the backend. While client-side validation enhances user experience, always implement strict server-side validation as the ultimate security control. Disregard client-side validation results in server-side processing for security decisions.
+
+### CWE-915: Improperly Controlled Modification of Dynamically-Determined Object Attributes
+**Summary:** The application allows untrusted input to control properties of an object, potentially leading to arbitrary code execution or denial of service via prototype pollution.
+**Mitigation Rule:** When merging or deeply assigning objects from untrusted or user-supplied sources, use libraries explicitly designed to prevent prototype pollution or apply strict validation. Avoid direct assignments using bracket notation `obj[key] = value` where `key` is untrusted, especially if `key` could resolve to `__proto__`, `constructor`, or `prototype`.
+
+### Hardcoded Secrets and Credentials
+**Summary:** Sensitive information such as API keys, database credentials, or encryption keys are embedded directly in the source code.
+**Mitigation Rule:** Never hardcode any secrets, credentials, API keys, or sensitive configuration values directly in the JavaScript or TypeScript source code. Utilize environment variables, a secure configuration management system, or a dedicated secrets management service (e.g., AWS Secrets Manager, HashiCorp Vault) to fetch these values at runtime. Ensure build processes do not embed secrets.
+
+### Memory Safety
+**Summary:** Concerns related to direct memory manipulation and potential vulnerabilities like buffer overflows or use-after-free.
+**Mitigation Rule:** As JavaScript is a memory-safe language with automatic garbage collection, explicit memory safety considerations, such as preventing buffer overflows or use-after-free vulnerabilities, are not directly applicable or necessary for the developer to manage. Focus on secure coding practices at the application logic level to prevent data integrity and confidentiality issues.
