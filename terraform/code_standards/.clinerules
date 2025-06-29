@@ -1,0 +1,41 @@
+As a quality-focused developer, generate clean, simplistic, maintainable, secure, and efficient Terraform code that adheres to established best practices.
+Prioritize code clarity and understandability, ensuring that the logic is easy to follow.
+Use inline comments to explain complex logic, architectural decisions, and any non-obvious implementation details that contribute to the overall quality and maintainability of the code.
+Adhere strictly to established coding conventions and style guides relevant to Terraform, and general principles of software engineering.
+**Avoid Ambiguity**: Be precise in your instructions. Do not make assumptions about developer intent or implicit knowledge.
+
+### Code Structure - Reusable Modules
+**Summary:** Encapsulates related resources into reusable, versioned modules to promote DRY principles and simplify infrastructure management.
+**Adherence Rule:** Group logically related resources into self-contained modules with a dedicated source repository; consume these modules in root configurations using a `module` block that references a specific version via a Git tag or registry source.
+
+### State Management - Remote and Secure Backend
+**Summary:** Ensures Terraform state is stored securely, durably, and is accessible to authorized team members while providing state locking.
+**Adherence Rule:** Always configure a remote backend (e.g., AWS S3 with DynamoDB for locking, Azure Blob Storage, or Terraform Cloud) within a `terraform` block; never use the default local state for collaborative or production environments.
+
+### Variable Management - Explicit and Validated Inputs
+**Summary:** Defines clear, strongly-typed, and documented input variables to create a robust and user-friendly interface for modules.
+**Adherence Rule:** Define all input variables in a `variables.tf` file with a non-empty `description`, a specific `type`, and sensible `default` values where applicable; use `validation` blocks to enforce constraints on input values.
+
+### Security - Secret Management
+**Summary:** Prevents sensitive data from being hardcoded in version control, ensuring secure handling of credentials and secrets.
+**Adherence Rule:** Never hardcode sensitive values; retrieve them at runtime from a secure data source like AWS Secrets Manager, Azure Key Vault, or HashiCorp Vault. Mark variables and outputs containing sensitive information with `sensitive = true`.
+
+### Dependency Management - Pinned Versions
+**Summary:** Guarantees predictable and repeatable builds by locking the versions of Terraform, providers, and modules.
+**Adherence Rule:** In the `terraform` block, specify a `required_version` and pin all provider versions within the `required_providers` block using the `version` attribute with a pessimistic version constraint (e.g., `~> 5.0`).
+
+### Readability - Consistent Naming Conventions
+**Summary:** Applies a consistent naming convention to all resources, variables, and outputs for improved readability and easier resource targeting.
+**Adherence Rule:** Name all resources and data sources using `snake_case` (e.g., `aws_instance.web_server`); use the format `name_type_environment` for resource names where appropriate to ensure clarity and avoid collisions.
+
+### Code Formatting - Canonical Style
+**Summary:** Enforces the official Terraform language style and formatting conventions for consistency across the codebase.
+**Adherence Rule:** Format all `.tf` and `.tfvars` files using the `terraform fmt -recursive` command before committing any changes.
+
+### Code Structure - Explicit Module Outputs
+**Summary:** Provides a clear and intentional interface for modules, exposing only necessary information to parent modules.
+**Adherence Rule:** Define all values that need to be accessed by a calling module in an `outputs.tf` file, each with a clear `description`; only output values that are part of the module's public API.
+
+### Resource Creation - Prefer `for_each` over `count`
+**Summary:** Creates multiple resource instances dynamically and safely without duplicating code blocks, minimizing risks during updates.
+**Adherence Rule:** Use the `for_each` meta-argument for creating multiple resource instances from a map or set of strings to ensure a stable resource mapping upon changes; avoid using `count` with lists where reordering could cause unintended resource destruction.

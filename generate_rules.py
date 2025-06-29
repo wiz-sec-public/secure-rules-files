@@ -8,7 +8,7 @@ import requests
 # Set up standard logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def generate_secure_rules_prompt(language: str, assistant: str, framework: str=None) -> str:
+def generate_secure_rules_prompt(language: str, assistant: str, framework: str=None, raw_prompt_content: str=None) -> str:
     """
     Provides guidance to the AI to generate an effective security rules file.
 
@@ -16,6 +16,7 @@ def generate_secure_rules_prompt(language: str, assistant: str, framework: str=N
         language: The programming language to apply rules to.
         assistant: The coding assistant to target, defaults to Cline
         framework: The core relevant framework, defaults to None
+        raw_prompt_content: The raw content of the prompt template.
     """
 
     ruleformat = 'The rules file must be formatted as a well-formed Markdown file.'
@@ -42,44 +43,8 @@ globs: **/*.js, **/*.ts # File patterns this rule applies to
 ---
 ```\n'''
 
-
-    return '''You are an expert software engineer specializing in secure code generation using LLMs. Your task is to generate a comprehensive {0} rules file, specifically designed to enforce security best practices for {1} applications built with {2}.
-
-{3}
-Adhere to best practices for effective rules files: they should be specific, actionable, concise, and maintain a consistent format.
-
-## Begin the rules file with the following foundational instructions for the LLM:
-- As a security-aware developer, generate secure {1} code using {2} that inherently prevents top security weaknesses.
-- Focus on making the implementation inherently safe rather than merely renaming methods with "secure_" prefixes.
-- Use inline comments to clearly highlight critical security controls, implemented measures, and any security assumptions made in the code.
-- Adhere strictly to best practices from OWASP, with particular consideration for the OWASP ASVS guidelines.
-- **Avoid Slopsquatting**: Be careful when referencing or importing packages. Do not guess if a package exists. Comment on any low reputation or uncommon packages you have included.
-
-## Identify and Address Top CWEs for {1} + {2}:
-Based on common vulnerabilities impacting {1} and {2} applications, identify the top 5-7 relevant CWEs. For each identified CWE, include the following in the rules file:
-
-1. CWE ID and Name: Clearly state the CWE ID and its official name.
-2. Summary: Provide a concise, one-sentence summary of the CWE.
-3. Mitigation Rule ({1}/{2} Specific): Formulate a concrete, actionable rule for the LLM to follow, directly addressing the CWE within the context of {1} and {2}. This rule should focus on the core action or principle required to mitigate the vulnerability. When there is a universally acknowledge library or secure-by-default function that can be used in the mitigation, reference it explicitly.
-
-Example format:
-
-    ### CWE-XX: CWE Name
-    **Summary:** CWE Description
-    **Mitigation Rule:** Prescriptive, language specific guidance
-
-
-## Specific Requirements for CWE Rules:
-* **Memory Safety**: For non memory-safe languages, prioritize memory safety.
-* **Hardcoded Secrets and Credentials**: Include a dedicated rule for preventing hardcoded secrets and credentials.
-
-## Formatting and Content Constraints:
-
-* **No Examples**: Do not include any code examples within the rules file. The rules should be purely prescriptive guidance.
-* **Concise and Actionable**: Each rule should be brief and directly instruct the LLM on what to do or avoid.
-* **Structured**: The rules file should be logically structured, with clear headings or markers for each CWE.
-* **Return Only Rules File**: Your response should only be the generated {0} rules file, properly formatted, and nothing else. Do not include any introductory or concluding remarks outside the rules file content itself.
-'''.format(assistant,language,framework,ruleformat)
+    # Use the provided raw_prompt_content and format it
+    return raw_prompt_content.format(assistant, language, framework, ruleformat)
 
 
 def get_anythingllm_workspace_slug(workspace_name: str, base_url: str, headers: dict) -> str:
@@ -127,7 +92,25 @@ def generate_content_with_anythingllm(prompt: str, workspace_slug: str, base_url
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate secure rules files using AnythingLLM.")
     parser.add_argument("--workspace", required=True, help="Name of the AnythingLLM workspace to use.")
+    parser.add_argument("--prompt", required=True, help="Path to the prompt file (e.g., prompts/default.txt).")
     args = parser.parse_args()
+
+    # Extract the prompt subdirectory name from the prompt file path
+    prompt_subdirectory_name = os.path.splitext(os.path.basename(args.prompt))[0]
+    if not prompt_subdirectory_name:
+        logging.error(f"Could not derive a valid subdirectory name from prompt path: {args.prompt}")
+        exit(1)
+
+    try:
+        with open(args.prompt, 'r') as f:
+            raw_prompt_content = f.read()
+        logging.info(f"Successfully loaded prompt from {args.prompt}")
+    except FileNotFoundError:
+        logging.error(f"Prompt file not found: {args.prompt}. Please ensure the path is correct.")
+        exit(1)
+    except IOError as e:
+        logging.error(f"Error reading prompt file {args.prompt}: {e}")
+        exit(1)
 
     ANYTHINGLLM_API_URL = os.environ.get('ANYTHINGLLM_API_URL')
     ANYTHINGLLM_API_KEY = os.environ.get('ANYTHINGLLM_API_KEY')
@@ -161,7 +144,7 @@ if __name__ == "__main__":
 
     for lang, framework in prompt_configs:
         for assistant in assistants:
-            prompt = generate_secure_rules_prompt(lang, assistant, framework)
+            prompt = generate_secure_rules_prompt(lang, assistant, framework, raw_prompt_content)
             rulesfile = generate_content_with_anythingllm(prompt, workspace_slug, ANYTHINGLLM_API_URL, headers)
 
             if rulesfile is None:
@@ -174,7 +157,8 @@ if __name__ == "__main__":
             if filename_pattern == "rules.mdc":
                 filename_pattern = f"{lang}_{framework}_rules.mdc"
 
-            directory_path = os.path.join(lang.lower().replace(' ', '_'), framework.lower().replace(' ', '_'))
+            # Construct the directory path including the prompt-specific subdirectory
+            directory_path = os.path.join(lang.lower().replace(' ', '_'), framework.lower().replace(' ', '_'), prompt_subdirectory_name)
             full_file_path = os.path.join(directory_path, filename_pattern)
 
             # Fix common formatting issues

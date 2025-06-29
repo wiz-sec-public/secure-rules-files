@@ -1,0 +1,41 @@
+As a quality-focused developer, generate clean, simplistic, maintainable, secure, and efficient Python code using Flask that adheres to established best practices.
+Prioritize code clarity and understandability, ensuring that the logic is easy to follow.
+Use inline comments to explain complex logic, architectural decisions, and any non-obvious implementation details that contribute to the overall quality and maintainability of the code.
+Adhere strictly to established coding conventions and style guides relevant to Flask (e.g., PEP 8 for Python, standard JS conventions for JavaScript), and general principles of software engineering.
+**Avoid Ambiguity**: Be precise in your instructions. Do not make assumptions about developer intent or implicit knowledge.
+
+### Code Structure - Blueprint-based Modularity
+**Summary:** Organizes the application into reusable, component-based modules for better separation of concerns and maintainability.
+**Adherence Rule:** Structure the Flask application using Blueprints for distinct functional areas (e.g., user authentication, API endpoints), and register each Blueprint with the main application object within an application factory (`create_app`).
+
+### Configuration Management - Environment-aware Configuration
+**Summary:** Manages application settings cleanly and securely for different environments like development, testing, and production.
+**Adherence Rule:** Load all application configuration via `app.config.from_object()` or `app.config.from_pyfile()` within an application factory function; never hardcode configuration values directly in the application code.
+
+### Error Handling - Centralized and Graceful Exception Handling
+**Summary:** Ensures the application responds to errors predictably and securely without crashing or leaking internal implementation details.
+**Adherence Rule:** Implement application-wide and Blueprint-specific error handlers using the `@app.errorhandler(Exception)` decorator to catch exceptions and return appropriate, standardized error pages or JSON responses.
+
+### Code Style - PEP 8 Compliance
+**Summary:** Adheres to the official Python style guide to ensure consistent, highly readable code across the entire project.
+**Adherence Rule:** Format all Python code strictly according to PEP 8 standards, using `snake_case` for variables and functions, `PascalCase` for classes, and appropriate whitespace and line length.
+
+### Function Design - Single Responsibility Principle
+**Summary:** Keeps functions and view handlers focused on a single, well-defined task to enhance readability, testability, and reusability.
+**Adherence Rule:** Ensure each function, especially Flask view functions, performs only one logical operation; delegate complex business logic, database operations, or data transformations to separate helper functions or service layer modules.
+
+### Dependency Management - Explicit and Pinned Dependencies
+**Summary:** Guarantees reproducible builds and prevents unexpected breakage from upstream dependency updates.
+**Adherence Rule:** List all project dependencies with their specific, pinned versions in a `requirements.txt` file or a `pyproject.toml` file (managed with a tool like Poetry or PDM).
+
+### Database Interaction - ORM and Session Scoping
+**Summary:** Manages database connections and transactions efficiently and safely, abstracting away raw SQL queries.
+**Adherence Rule:** Interact with the database exclusively through a Flask-aware ORM like Flask-SQLAlchemy, ensuring the database session's lifecycle is correctly scoped to the application or request context to prevent connection leaks.
+
+### Request Handling - Context-Local Usage
+**Summary:** Uses Flask's context-local objects correctly to handle request data in a thread-safe manner without polluting the global scope.
+**Adherence Rule:** Access request-specific data exclusively through Flask's context-local objects (`request`, `session`, `g`) within a view function's scope; never store request-specific information in global variables.
+
+### Performance - Efficient Response Generation
+**Summary:** Ensures that server responses are generated and delivered efficiently to minimize latency.
+**Adherence Rule:** Utilize Flask's built-in `jsonify()` for creating JSON responses and `send_file()` for serving static assets to leverage framework optimizations and set correct HTTP headers.

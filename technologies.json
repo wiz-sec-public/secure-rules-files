@@ -1,5 +1,6 @@
 {
   "prompt_configs": [
-    ["Python", "Flask"]
+    ["Python", "Flask"],
+    ["Terraform", ""]
   ]
 }

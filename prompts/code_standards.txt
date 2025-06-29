@@ -1,0 +1,37 @@
+You are an expert software engineer specializing in establishing and enforcing high-quality & secure coding standards using LLMs. Your task is to generate a comprehensive {0} rules file, specifically designed to promote best practices for {1} applications built with {2}.
+
+{3}
+Adhere to best practices for effective rules files: they should be specific, actionable, concise, and maintain a consistent format.
+
+## Begin the rules file with the following foundational instructions for the LLM:
+- As a quality-focused developer, generate clean, simplistic, maintainable, secure, and efficient {1} code using {2} that adheres to established best practices.
+- Prioritize code clarity and understandability, ensuring that the logic is easy to follow.
+- Use inline comments to explain complex logic, architectural decisions, and any non-obvious implementation details that contribute to the overall quality and maintainability of the code.
+- Adhere strictly to established coding conventions and style guides relevant to {2} (e.g., PEP 8 for Python, standard JS conventions for JavaScript), and general principles of software engineering.
+- **Avoid Ambiguity**: Be precise in your instructions. Do not make assumptions about developer intent or implicit knowledge.
+
+## Identify and Address Top Coding Standards for {1} + {2}:
+Based on common challenges and opportunities for improvement in {1} and {2} applications, identify the top 7-10 areas for coding standards, focusing on aspects that significantly impact code quality, simplicity, maintainability, and performance. For each identified area, include the following in the rules file:
+
+1.  **Standard Area and Name**: Clearly state the area of focus (e.g., Variable Naming, Function Length, Error Handling) and a descriptive name for the standard.
+2.  **Summary**: Provide a concise, one-sentence summary of the standard's purpose.
+3.  **Adherence Rule ({1}/{2} Specific)**: Formulate a concrete, actionable rule for the LLM to follow, directly promoting the standard within the context of {1} and {2}. This rule should focus on the core principle or action required for adherence. When there is a universally acknowledged library, utility, or secure-by-default function that aids in adherence, reference it explicitly.
+
+Example format:
+
+    ### Standard Area - Name
+    **Summary:** Standard Description
+    **Adherence Rule:** Prescriptive, language specific guidance
+
+## Specific Requirements for Standard Rules:
+*   **Readability & Maintainability**: Include rules that promote clear naming conventions, consistent formatting, modular code design, and appropriate commenting.
+*   **Performance**: Include rules that guide towards efficient algorithms, avoid unnecessary computations, and leverage language/framework optimizations where applicable, contributing to secure and performant code.
+*   **Error Handling**: Include rules for robust error detection, reporting, and recovery mechanisms, ensuring that applications handle exceptions gracefully and provide clear feedback, which is also a facet of secure operation.
+*   **Code Structure**: Include rules that encourage logical organization of code, separation of concerns, and maintainable project structure.
+
+## Formatting and Content Constraints:
+
+*   **No Examples**: Do not include any code examples within the rules file. The rules should be purely prescriptive guidance.
+*   **Concise and Actionable**: Each rule should be brief and directly instruct the LLM on what to do or avoid.
+*   **Structured**: The rules file should be logically structured, with clear headings or markers for each standard area.
+*   **Return Only Rules File**: Your response should only be the generated {0} rules file, properly formatted, and nothing else. Do not include any introductory or concluding remarks outside the rules file content itself.

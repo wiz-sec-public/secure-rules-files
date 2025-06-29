@@ -1,0 +1,49 @@
+As a security-aware developer, generate secure Terraform code using AWS that inherently prevents top security weaknesses.
+Focus on making the implementation inherently safe rather than merely renaming methods with "secure_" prefixes.
+Use inline comments to clearly highlight critical security controls, implemented measures, and any security assumptions made in the code.
+Adhere strictly to best practices from OWASP, with particular consideration for the OWASP ASVS guidelines.
+**Avoid Slopsquatting**: Be careful when referencing or importing packages. Do not guess if a package exists. Comment on any low reputation or uncommon packages you have included.
+
+### CWE-798: Use of Hard-coded Credentials
+**Summary:** Storing secrets, such as passwords, API keys, or certificates, directly within Terraform configuration files.
+**Mitigation Rule:** Define sensitive inputs as variables with `sensitive = true` and inject them at runtime using secure mechanisms like environment variables (`TF_VAR_name`), a `.tfvars` file excluded from version control, or a data source for a secrets manager like AWS Secrets Manager or HashiCorp Vault.
+
+### CWE-272: Least Privilege Violation
+**Summary:** Assigning broader permissions to IAM users, roles, or resources than are required for their intended function.
+**Mitigation Rule:** Construct all `aws_iam_policy_document` resources with the most specific actions and resource ARNs possible; avoid using wildcards (`*`) for actions or resources unless absolutely necessary.
+
+### CWE-284: Improper Access Control
+**Summary:** Network controls like security groups are configured to allow unrestricted access from the internet.
+**Mitigation Rule:** For all `aws_security_group` resources, define ingress rules that restrict traffic to the specific ports and trusted source IP ranges (`cidr_blocks`) required for operation; avoid using `0.0.0.0/0` or `::/0` except for intentionally public services like web servers.
+
+### CWE-311: Missing Encryption of Sensitive Data
+**Summary:** Data stored in services like S3, EBS, or RDS is not encrypted at rest, exposing it in case of unauthorized access to the storage medium.
+**Mitigation Rule:** Explicitly enable encryption-at-rest for all storage resources: set `encrypted = true` for `aws_ebs_volume`, define `server_side_encryption_configuration` for `aws_s3_bucket`, and set `storage_encrypted = true` for `aws_db_instance`.
+
+### CWE-922: Insecure Storage of Sensitive Information
+**Summary:** Object storage, such as an S3 bucket, is configured to allow public access, inadvertently exposing its contents.
+**Mitigation Rule:** Attach an `aws_s3_bucket_public_access_block` to every `aws_s3_bucket` and set `block_public_acls`, `block_public_policy`, `ignore_public_acls`, and `restrict_public_buckets` to `true`.
+
+### CWE-532: Insertion of Sensitive Information into Log File
+**Summary:** The Terraform state file, which may contain secrets in plain text, is stored insecurely or committed to version control.
+**Mitigation Rule:** Always configure a remote backend for state file storage, such as an `aws_s3_bucket` with encryption, versioning, and access logging enabled. Never commit the `terraform.tfstate` or `terraform.tfstate.backup` files to Git.
+
+### CWE-778: Insufficient Logging
+**Summary:** Key security and operational activities within the cloud environment are not logged, preventing detection and investigation of incidents.
+**Mitigation Rule:** Provision a multi-region `aws_cloudtrail` resource to log all API activity and enable logging for critical services, such as `aws_vpc` (VPC Flow Logs) and `aws_lb` (Access Logs).
+
+### CWE-200: Exposure of Sensitive Information to an Unauthorized Actor
+**Summary:** A resource like a database or search cluster is unintentionally made accessible from the public internet.
+**Mitigation Rule:** For resources such as `aws_db_instance`, `aws_rds_cluster_instance`, and `aws_elasticsearch_domain`, explicitly set the `publicly_accessible` argument to `false`.
+
+### CWE-326: Inadequate Encryption Strength
+**Summary:** An external-facing load balancer or distribution is configured to support weak or outdated TLS/SSL protocols and ciphers.
+**Mitigation Rule:** When defining an `aws_lb_listener` for HTTPS traffic, always specify a modern `ssl_policy`, such as `ELBSecurityPolicy-TLS-1-2-Ext-2018-06`, and avoid legacy policies.
+
+### CWE-1188: Insecure Default Initialization of Resource
+**Summary:** A resource is created without explicitly defining security-critical settings, relying on provider defaults that may be insecure.
+**Mitigation Rule:** Do not rely on implicit provider defaults for security settings; explicitly define all security-relevant arguments for resources, including encryption, access controls, and logging configurations.
+
+### CWE-506: Embedded Malicious Code
+**Summary:** Using Terraform modules from unverified or untrusted sources introduces the risk of executing malicious code.
+**Mitigation Rule:** Source all Terraform modules from a trusted source like the official Terraform Registry or a vetted, internal repository. Pin module versions to a specific, audited version tag to prevent unexpected or malicious updates.

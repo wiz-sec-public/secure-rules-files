@@ -1,0 +1,53 @@
+As a security-aware developer, generate secure Python code using Flask that inherently prevents top security weaknesses.
+Focus on making the implementation inherently safe rather than merely renaming methods with "secure_" prefixes.
+Use inline comments to clearly highlight critical security controls, implemented measures, and any security assumptions made in the code.
+Adhere strictly to best practices from OWASP, with particular consideration for the OWASP ASVS guidelines.
+**Avoid Slopsquatting**: Be careful when referencing or importing packages. Do not guess if a package exists. Comment on any low reputation or uncommon packages you have included.
+
+### CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')
+**Summary:** Untrusted user input is rendered directly in web pages, allowing attackers to execute malicious scripts in users' browsers.
+**Mitigation Rule:** Always use the Jinja2 templating engine provided with Flask for rendering HTML, and never disable its default auto-escaping feature.
+
+### CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')
+**Summary:** User input is improperly included in database queries, allowing attackers to alter query logic and access or modify data.
+**Mitigation Rule:** Never use string formatting or concatenation to construct SQL queries; instead, use a trusted Object-Relational Mapper (ORM) like SQLAlchemy or a database driver's built-in parameterized queries to safely pass data to the database.
+
+### CWE-798: Use of Hard-coded Credentials
+**Summary:** Storing credentials, API keys, or other secrets directly in source code exposes them to anyone with access to the code.
+**Mitigation Rule:** Never hard-code secrets in source files; load them from environment variables using `os.getenv()` or from a dedicated secrets management service.
+
+### CWE-352: Cross-Site Request Forgery (CSRF)
+**Summary:** A web application fails to verify that a state-changing request was intentionally sent by the authenticated user.
+**Mitigation Rule:** Integrate the `Flask-WTF` extension to generate and validate unique CSRF tokens for all forms and state-changing requests (e.g., POST, PUT, DELETE).
+
+### CWE-77: Improper Neutralization of Special Elements used in a Command ('Command Injection')
+**Summary:** User-controlled data is passed to a system shell command, allowing for arbitrary command execution on the server.
+**Mitigation Rule:** Avoid executing shell commands using `os.system()` or `subprocess.run()` with `shell=True`; if unavoidable, sanitize all user-supplied arguments using `shlex.quote()`.
+
+### CWE-502: Deserialization of Untrusted Data
+**Summary:** Deserializing untrusted data can lead to remote code execution if the data contains malicious, specially crafted objects.
+**Mitigation Rule:** Never use `pickle` or `pyyaml.load()` to deserialize data from untrusted sources; use a safe data interchange format like JSON instead. If YAML must be used, always use `yaml.safe_load()`.
+
+### CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')
+**Summary:** User-supplied input is used to construct a file path without proper validation, potentially allowing access to arbitrary files on the server.
+**Mitigation Rule:** Before using any user-provided filename in a file system operation, sanitize it with `werkzeug.utils.secure_filename()` and join it with a securely defined base directory.
+
+### CWE-611: Improper Restriction of XML External Entity Reference
+**Summary:** An XML parser processes user-controlled XML documents with external entity references, which can lead to data exfiltration or denial-of-service.
+**Mitigation Rule:** When parsing XML, explicitly disable DTD processing and external entity resolution in the parser library (e.g., `lxml`, `xml.etree.ElementTree`).
+
+### CWE-287: Improper Authentication
+**Summary:** The application has weak or missing authentication mechanisms, allowing attackers to bypass access controls.
+**Mitigation Rule:** Use a dedicated authentication library like `Flask-Login` for session management and always hash and salt user passwords using a strong, adaptive algorithm via `werkzeug.security.generate_password_hash()` and verify with `check_password_hash()`.
+
+### CWE-918: Server-Side Request Forgery (SSRF)
+**Summary:** An attacker can coerce the application to make requests to an arbitrary domain, potentially accessing internal services or metadata endpoints.
+**Mitigation Rule:** Validate any user-supplied URL against a strict allow-list of permitted hosts, schemes, and ports before making an outbound request.
+
+### CWE-209: Generation of Error Message Containing Sensitive Information
+**Summary:** Detailed error messages and stack traces are exposed to users, revealing sensitive information about the application's internal workings.
+**Mitigation Rule:** Always set `DEBUG = False` in production configurations and implement custom, generic error handlers for HTTP 500 errors to prevent leaking internal application state.
+
+### CWE-400: Uncontrolled Resource Consumption
+**Summary:** The application does not control the allocation of resources, making it vulnerable to denial-of-service attacks via resource exhaustion.
+**Mitigation Rule:** Implement rate limiting on all endpoints, especially authentication and form submissions, using a library like `Flask-Limiter`, and enforce a maximum content length for file uploads via the `MAX_CONTENT_LENGTH` app configuration variable.
