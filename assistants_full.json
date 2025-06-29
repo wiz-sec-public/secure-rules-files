@@ -1,0 +1,23 @@
+{
+  "cursor": {
+    "pattern": "rules.mdc"
+  },
+  "cline": {
+    "pattern": ".clinerules"
+  },
+  "claude": {
+    "pattern": "CLAUDE.md"
+  },
+  "windsurf": {
+    "pattern": ".windsurfrules"
+  },
+  "codex": {
+    "pattern": "AGENTS.md"
+  },
+  "aider": {
+    "pattern": "CONVENTIONS.md"
+  },
+  "copilot": {
+    "pattern": "copilot-instructions.md"
+  }
+}

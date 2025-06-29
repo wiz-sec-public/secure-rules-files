@@ -1,0 +1,11 @@
+{
+  "prompt_configs": [
+    ["Python", "Django"],
+    ["Python", "Flask"],
+    ["Java", "Spring"],
+    ["JavaScript", "React"],
+    ["JavaScript", "Node.js"],
+    [".NET", "ASP.NET Core"],
+    ["C", "any"]
+  ]
+}
